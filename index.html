@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento Fisioterapia - Dra. Ana Silva</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-shadow {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        .admin-panel {
+            display: none;
+        }
+        .success-animation {
+            animation: bounce 0.6s ease-in-out;
+        }
+        @keyframes bounce {
+            0%, 20%, 60%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            80% { transform: translateY(-5px); }
+        }
+    </style>
+</head>
+<body class="min-h-screen gradient-bg">
+    <!-- Header -->
+    <header class="bg-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-heartbeat text-3xl text-purple-600"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-800">Dra. Ana Silva</h1>
+                        <p class="text-sm text-gray-600">Fisioterapeuta - CREFITO 12345</p>
+                    </div>
+                </div>
+                <button onclick="showLoginModal()" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                    <i class="fas fa-cog mr-2"></i>Admin
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
+        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4 card-shadow">
+            <div class="text-center mb-6">
+                <i class="fas fa-lock text-4xl text-purple-600 mb-4"></i>
+                <h3 class="text-2xl font-bold text-gray-800">Acesso Administrativo</h3>
+                <p class="text-gray-600">Entre com suas credenciais para acessar o painel</p>
+            </div>
+            
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-envelope mr-2"></i>E-mail
+                    </label>
+                    <input type="email" id="admin-email" required 
+                           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                           placeholder="dra.ana@fisioterapia.com">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">
+                        <i class="fas fa-key mr-2"></i>Senha
+                    </label>
+                    <div class="relative">
+                        <input type="password" id="admin-password" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent pr-12"
+                               placeholder="Digite sua senha">
+                        <button type="button" onclick="togglePasswordVisibility()" 
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                            <i id="password-icon" class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="login-error" class="hidden bg-red-50 border border-red-200 rounded-lg p-3 text-red-700 text-sm">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    E-mail ou senha incorretos. Tente novamente.
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button type="button" onclick="hideLoginModal()" 
+                            class="flex-1 bg-gray-500 text-white py-3 rounded-lg hover:bg-gray-600 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" 
+                            class="flex-1 bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-sign-in-alt mr-2"></i>Entrar
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                <p class="text-sm text-blue-800 font-semibold mb-2">
+                    <i class="fas fa-info-circle mr-2"></i>Credenciais de Demonstração:
+                </p>
+                <p class="text-sm text-blue-700">
+                    <strong>E-mail:</strong> dra.ana@fisioterapia.com<br>
+                    <strong>Senha:</strong> admin123
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Patient Booking Section -->
+        <div id="patient-section" class="max-w-2xl mx-auto">
+            <div class="bg-white rounded-2xl card-shadow p-8 mb-8">
+                <div class="text-center mb-8">
+                    <i class="fas fa-calendar-check text-5xl text-purple-600 mb-4"></i>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-2">Agende sua Consulta</h2>
+                    <p class="text-gray-600">Escolha o melhor horário para você de forma rápida e fácil</p>
+                </div>
+
+                <form id="booking-form" class="space-y-6">
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2"></i>Nome Completo
+                            </label>
+                            <input type="text" id="patient-name" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-phone mr-2"></i>WhatsApp
+                            </label>
+                            <input type="tel" id="patient-phone" required placeholder="(11) 99999-9999"
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-envelope mr-2"></i>E-mail
+                        </label>
+                        <input type="email" id="patient-email" required 
+                               class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-calendar mr-2"></i>Data
+                            </label>
+                            <input type="date" id="appointment-date" required 
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-clock mr-2"></i>Horário
+                            </label>
+                            <select id="appointment-time" required 
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                                <option value="">Selecione um horário</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-notes-medical mr-2"></i>Observações (opcional)
+                        </label>
+                        <textarea id="appointment-notes" rows="3" 
+                                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                  placeholder="Descreva brevemente o motivo da consulta ou alguma observação importante"></textarea>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full bg-purple-600 text-white py-4 rounded-lg font-semibold text-lg hover:bg-purple-700 transform hover:scale-105 transition-all duration-200">
+                        <i class="fas fa-check-circle mr-2"></i>Confirmar Agendamento
+                    </button>
+                </form>
+            </div>
+
+            <!-- Success Message -->
+            <div id="success-message" class="hidden bg-green-50 border border-green-200 rounded-2xl p-6 text-center">
+                <i class="fas fa-check-circle text-4xl text-green-600 mb-4 success-animation"></i>
+                <h3 class="text-xl font-bold text-green-800 mb-2">Consulta Agendada com Sucesso!</h3>
+                <p class="text-green-700 mb-4">Você receberá a confirmação via WhatsApp em breve.</p>
+                <div class="bg-white rounded-lg p-4 text-left">
+                    <h4 class="font-semibold text-gray-800 mb-2">Detalhes do Agendamento:</h4>
+                    <div id="appointment-details" class="text-sm text-gray-600 space-y-1"></div>
+                </div>
+                <button onclick="newAppointment()" 
+                        class="mt-4 bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors">
+                    Novo Agendamento
+                </button>
+            </div>
+        </div>
+
+        <!-- Admin Panel -->
+        <div id="admin-panel" class="admin-panel max-w-6xl mx-auto">
+            <div class="bg-white rounded-2xl card-shadow p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <div>
+                        <h2 class="text-3xl font-bold text-gray-800">Painel Administrativo</h2>
+                        <p class="text-gray-600">Gerencie consultas e horários disponíveis</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <button onclick="logout()" 
+                                class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">
+                            <i class="fas fa-sign-out-alt mr-2"></i>Sair
+                        </button>
+                        <button onclick="toggleAdminPanel()" 
+                                class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors">
+                            <i class="fas fa-times mr-2"></i>Fechar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="grid md:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-blue-50 rounded-xl p-6 text-center">
+                        <i class="fas fa-calendar-day text-3xl text-blue-600 mb-2"></i>
+                        <h3 class="text-2xl font-bold text-blue-800" id="today-appointments">0</h3>
+                        <p class="text-blue-600">Hoje</p>
+                    </div>
+                    <div class="bg-green-50 rounded-xl p-6 text-center">
+                        <i class="fas fa-calendar-week text-3xl text-green-600 mb-2"></i>
+                        <h3 class="text-2xl font-bold text-green-800" id="week-appointments">0</h3>
+                        <p class="text-green-600">Esta Semana</p>
+                    </div>
+                    <div class="bg-purple-50 rounded-xl p-6 text-center">
+                        <i class="fas fa-calendar-alt text-3xl text-purple-600 mb-2"></i>
+                        <h3 class="text-2xl font-bold text-purple-800" id="month-appointments">0</h3>
+                        <p class="text-purple-600">Este Mês</p>
+                    </div>
+                    <div class="bg-orange-50 rounded-xl p-6 text-center">
+                        <i class="fas fa-clock text-3xl text-orange-600 mb-2"></i>
+                        <h3 class="text-2xl font-bold text-orange-800" id="available-slots">24</h3>
+                        <p class="text-orange-600">Horários Livres</p>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="border-b border-gray-200 mb-6">
+                    <nav class="flex space-x-8">
+                        <button onclick="showTab('appointments')" id="appointments-tab" 
+                                class="py-2 px-1 border-b-2 border-purple-500 font-medium text-sm text-purple-600">
+                            Consultas Agendadas
+                        </button>
+                        <button onclick="showTab('schedule')" id="schedule-tab" 
+                                class="py-2 px-1 border-b-2 border-transparent font-medium text-sm text-gray-500 hover:text-gray-700">
+                            Gerenciar Horários
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Appointments Tab -->
+                <div id="appointments-content" class="tab-content">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paciente</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data/Hora</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contato</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="appointments-table" class="bg-white divide-y divide-gray-200">
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                                        Nenhuma consulta agendada ainda
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Schedule Management Tab -->
+                <div id="schedule-content" class="tab-content hidden">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Horários de Funcionamento</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <span class="font-medium">Segunda a Sexta</span>
+                                    <span class="text-gray-600">08:00 - 18:00</span>
+                                    <button class="text-purple-600 hover:text-purple-800">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <span class="font-medium">Sábado</span>
+                                    <span class="text-gray-600">08:00 - 12:00</span>
+                                    <button class="text-purple-600 hover:text-purple-800">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                    <span class="font-medium">Domingo</span>
+                                    <span class="text-red-600">Fechado</span>
+                                    <button class="text-purple-600 hover:text-purple-800">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-semibold text-gray-800 mb-4">Bloquear Horários</h3>
+                            <form id="block-time-form" class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Data</label>
+                                    <input type="date" id="block-date" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora Início</label>
+                                        <input type="time" id="block-start" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Hora Fim</label>
+                                        <input type="time" id="block-end" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Motivo</label>
+                                    <input type="text" id="block-reason" placeholder="Ex: Reunião, Curso, etc." 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                </div>
+                                <button type="submit" 
+                                        class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition-colors">
+                                    <i class="fas fa-ban mr-2"></i>Bloquear Horário
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let appointments = JSON.parse(localStorage.getItem('appointments') || '[]');
+        let blockedTimes = JSON.parse(localStorage.getItem('blockedTimes') || '[]');
+        let isLoggedIn = sessionStorage.getItem('adminLoggedIn') === 'true';
+        
+        // Admin credentials (in production, this should be handled server-side)
+        const adminCredentials = {
+            email: 'dra.ana@fisioterapia.com',
+            password: 'admin123'
+        };
+        
+        // Available time slots
+        const timeSlots = [
+            '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+            '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00', '17:30'
+        ];
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupDateInput();
+            updateTimeSlots();
+            updateAdminStats();
+            updateAppointmentsTable();
+        });
+
+        // Setup minimum date for appointment booking
+        function setupDateInput() {
+            const dateInput = document.getElementById('appointment-date');
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            dateInput.min = tomorrow.toISOString().split('T')[0];
+            dateInput.addEventListener('change', updateTimeSlots);
+        }
+
+        // Update available time slots based on selected date
+        function updateTimeSlots() {
+            const dateInput = document.getElementById('appointment-date');
+            const timeSelect = document.getElementById('appointment-time');
+            const selectedDate = dateInput.value;
+            
+            timeSelect.innerHTML = '<option value="">Selecione um horário</option>';
+            
+            if (!selectedDate) return;
+            
+            const dayOfWeek = new Date(selectedDate).getDay();
+            let availableSlots = [...timeSlots];
+            
+            // Remove Sunday slots
+            if (dayOfWeek === 0) {
+                timeSelect.innerHTML = '<option value="">Domingo - Fechado</option>';
+                return;
+            }
+            
+            // Saturday only morning slots
+            if (dayOfWeek === 6) {
+                availableSlots = timeSlots.filter(time => time < '12:00');
+            }
+            
+            // Remove booked appointments
+            const bookedTimes = appointments
+                .filter(apt => apt.date === selectedDate)
+                .map(apt => apt.time);
+            
+            // Remove blocked times
+            const blockedTimesForDate = blockedTimes
+                .filter(block => block.date === selectedDate)
+                .flatMap(block => getTimeRange(block.startTime, block.endTime));
+            
+            availableSlots = availableSlots.filter(time => 
+                !bookedTimes.includes(time) && !blockedTimesForDate.includes(time)
+            );
+            
+            availableSlots.forEach(time => {
+                const option = document.createElement('option');
+                option.value = time;
+                option.textContent = time;
+                timeSelect.appendChild(option);
+            });
+            
+            if (availableSlots.length === 0) {
+                timeSelect.innerHTML = '<option value="">Nenhum horário disponível</option>';
+            }
+        }
+
+        // Get time range for blocking
+        function getTimeRange(start, end) {
+            const times = [];
+            const startTime = timeSlots.indexOf(start);
+            const endTime = timeSlots.indexOf(end);
+            
+            for (let i = startTime; i <= endTime; i++) {
+                if (timeSlots[i]) times.push(timeSlots[i]);
+            }
+            return times;
+        }
+
+        // Handle appointment booking form submission
+        document.getElementById('booking-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                id: Date.now(),
+                name: document.getElementById('patient-name').value,
+                phone: document.getElementById('patient-phone').value,
+                email: document.getElementById('patient-email').value,
+                date: document.getElementById('appointment-date').value,
+                time: document.getElementById('appointment-time').value,
+                notes: document.getElementById('appointment-notes').value,
+                status: 'Confirmado',
+                createdAt: new Date().toISOString()
+            };
+            
+            appointments.push(formData);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            
+            showSuccessMessage(formData);
+            sendWhatsAppConfirmation(formData);
+            sendEmailNotification(formData);
+            
+            updateAdminStats();
+            updateAppointmentsTable();
+        });
+
+        // Show success message
+        function showSuccessMessage(appointment) {
+            document.getElementById('patient-section').style.display = 'none';
+            document.getElementById('success-message').classList.remove('hidden');
+            
+            const details = document.getElementById('appointment-details');
+            details.innerHTML = `
+                <div><strong>Paciente:</strong> ${appointment.name}</div>
+                <div><strong>Data:</strong> ${formatDate(appointment.date)}</div>
+                <div><strong>Horário:</strong> ${appointment.time}</div>
+                <div><strong>WhatsApp:</strong> ${appointment.phone}</div>
+                ${appointment.notes ? `<div><strong>Observações:</strong> ${appointment.notes}</div>` : ''}
+            `;
+        }
+
+        // Send WhatsApp confirmation (Demo)
+        function sendWhatsAppConfirmation(appointment) {
+            const message = `🏥 *Consulta Confirmada - Dra. Ana Silva*\n\n` +
+                          `Olá ${appointment.name}!\n\n` +
+                          `Sua consulta foi agendada com sucesso:\n` +
+                          `📅 Data: ${formatDate(appointment.date)}\n` +
+                          `🕐 Horário: ${appointment.time}\n\n` +
+                          `📍 Endereço: Rua das Flores, 123 - Centro\n\n` +
+                          `Em caso de dúvidas, entre em contato conosco.\n\n` +
+                          `Atenciosamente,\nEquipe Dra. Ana Silva`;
+            
+            // Demo notification
+            setTimeout(() => {
+                alert(`📱 WhatsApp enviado para ${appointment.phone}\n\nMensagem: ${message}`);
+            }, 1000);
+        }
+
+        // Send email notification (Demo)
+        function sendEmailNotification(appointment) {
+            const emailContent = {
+                to: 'dra.ana@fisioterapia.com',
+                subject: `Nova Consulta Agendada - ${appointment.name}`,
+                body: `Nova consulta agendada:\n\n` +
+                      `Paciente: ${appointment.name}\n` +
+                      `Data: ${formatDate(appointment.date)}\n` +
+                      `Horário: ${appointment.time}\n` +
+                      `Telefone: ${appointment.phone}\n` +
+                      `Email: ${appointment.email}\n` +
+                      `Observações: ${appointment.notes || 'Nenhuma'}`
+            };
+            
+            // Demo notification
+            setTimeout(() => {
+                console.log('📧 Email enviado para a fisioterapeuta:', emailContent);
+            }, 1500);
+        }
+
+        // New appointment
+        function newAppointment() {
+            document.getElementById('success-message').classList.add('hidden');
+            document.getElementById('patient-section').style.display = 'block';
+            document.getElementById('booking-form').reset();
+            setupDateInput();
+            updateTimeSlots();
+        }
+
+        // Show login modal
+        function showLoginModal() {
+            if (isLoggedIn) {
+                toggleAdminPanel();
+            } else {
+                document.getElementById('login-modal').classList.remove('hidden');
+                document.getElementById('admin-email').focus();
+            }
+        }
+
+        // Hide login modal
+        function hideLoginModal() {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('login-form').reset();
+            document.getElementById('login-error').classList.add('hidden');
+        }
+
+        // Toggle password visibility
+        function togglePasswordVisibility() {
+            const passwordInput = document.getElementById('admin-password');
+            const passwordIcon = document.getElementById('password-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                passwordIcon.classList.remove('fa-eye');
+                passwordIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                passwordIcon.classList.remove('fa-eye-slash');
+                passwordIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Handle login form submission
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('admin-email').value;
+            const password = document.getElementById('admin-password').value;
+            
+            if (email === adminCredentials.email && password === adminCredentials.password) {
+                isLoggedIn = true;
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                hideLoginModal();
+                toggleAdminPanel();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+                document.getElementById('admin-password').value = '';
+                document.getElementById('admin-password').focus();
+            }
+        });
+
+        // Logout function
+        function logout() {
+            if (confirm('Tem certeza que deseja sair do painel administrativo?')) {
+                isLoggedIn = false;
+                sessionStorage.removeItem('adminLoggedIn');
+                toggleAdminPanel();
+            }
+        }
+
+        // Toggle admin panel
+        function toggleAdminPanel() {
+            if (!isLoggedIn) {
+                showLoginModal();
+                return;
+            }
+            
+            const adminPanel = document.getElementById('admin-panel');
+            const patientSection = document.getElementById('patient-section');
+            
+            if (adminPanel.style.display === 'none' || !adminPanel.style.display) {
+                adminPanel.style.display = 'block';
+                patientSection.style.display = 'none';
+                document.getElementById('success-message').classList.add('hidden');
+            } else {
+                adminPanel.style.display = 'none';
+                patientSection.style.display = 'block';
+            }
+        }
+
+        // Show admin tabs
+        function showTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('[id$="-tab"]').forEach(tab => {
+                tab.classList.remove('border-purple-500', 'text-purple-600');
+                tab.classList.add('border-transparent', 'text-gray-500');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-content').classList.remove('hidden');
+            
+            // Add active class to selected tab
+            const activeTab = document.getElementById(tabName + '-tab');
+            activeTab.classList.add('border-purple-500', 'text-purple-600');
+            activeTab.classList.remove('border-transparent', 'text-gray-500');
+        }
+
+        // Update admin statistics
+        function updateAdminStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const thisWeekStart = getWeekStart(new Date());
+            const thisMonthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0];
+            
+            const todayCount = appointments.filter(apt => apt.date === today).length;
+            const weekCount = appointments.filter(apt => apt.date >= thisWeekStart).length;
+            const monthCount = appointments.filter(apt => apt.date >= thisMonthStart).length;
+            
+            document.getElementById('today-appointments').textContent = todayCount;
+            document.getElementById('week-appointments').textContent = weekCount;
+            document.getElementById('month-appointments').textContent = monthCount;
+        }
+
+        // Get week start date
+        function getWeekStart(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            return new Date(d.setDate(diff)).toISOString().split('T')[0];
+        }
+
+        // Update appointments table
+        function updateAppointmentsTable() {
+            const tbody = document.getElementById('appointments-table');
+            
+            if (appointments.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                            Nenhuma consulta agendada ainda
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            const sortedAppointments = appointments.sort((a, b) => 
+                new Date(a.date + ' ' + a.time) - new Date(b.date + ' ' + b.time)
+            );
+            
+            tbody.innerHTML = sortedAppointments.map(apt => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">${apt.name}</div>
+                        <div class="text-sm text-gray-500">${apt.email}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${formatDate(apt.date)}</div>
+                        <div class="text-sm text-gray-500">${apt.time}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">${apt.phone}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            ${apt.status}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="cancelAppointment(${apt.id})" 
+                                class="text-red-600 hover:text-red-900 mr-3">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <button onclick="sendReminder(${apt.id})" 
+                                class="text-blue-600 hover:text-blue-900">
+                            <i class="fas fa-bell"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Cancel appointment
+        function cancelAppointment(id) {
+            if (confirm('Tem certeza que deseja cancelar esta consulta?')) {
+                appointments = appointments.filter(apt => apt.id !== id);
+                localStorage.setItem('appointments', JSON.stringify(appointments));
+                updateAppointmentsTable();
+                updateAdminStats();
+            }
+        }
+
+        // Send reminder
+        function sendReminder(id) {
+            const appointment = appointments.find(apt => apt.id === id);
+            if (appointment) {
+                alert(`📱 Lembrete enviado para ${appointment.name} via WhatsApp!`);
+            }
+        }
+
+        // Block time form submission
+        document.getElementById('block-time-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const blockData = {
+                id: Date.now(),
+                date: document.getElementById('block-date').value,
+                startTime: document.getElementById('block-start').value,
+                endTime: document.getElementById('block-end').value,
+                reason: document.getElementById('block-reason').value
+            };
+            
+            blockedTimes.push(blockData);
+            localStorage.setItem('blockedTimes', JSON.stringify(blockedTimes));
+            
+            alert('Horário bloqueado com sucesso!');
+            this.reset();
+            updateTimeSlots();
+        });
+
+        // Format date for display
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            return date.toLocaleDateString('pt-BR', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'96e14c62946b27f3',t:'MTc1NTAxNTYwOS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
